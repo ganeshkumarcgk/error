@@ -1,169 +1,76 @@
-import 'dart:io';
+void validateAndUpload() async{
+    if(_formKey.currentState.validate()){
+      if(_image1 != null){
+        print('image1');
+        print(_image1);
+        print('image2');
+        print(_image2);
+        print('image3');
+        print(_image3);
+        print('image4');
+        print(_image4);
+        print('image5');
+        print(_image5);
+        print('image6');
+        print(_image6);
+        print(radioButtonItem);
+        List<int> imageBytes6 = _image6.readAsBytesSync();
+        String baseimage6 = base64Encode(imageBytes6);
+        List<int> imageBytes5 = _image5.readAsBytesSync();
+        String baseimage5 = base64Encode(imageBytes5);
+        List<int> imageBytes4 = _image4.readAsBytesSync();
+        String baseimage4= base64Encode(imageBytes4);
+        List<int> imageBytes3 = _image3.readAsBytesSync();
+        String baseimage3 = base64Encode(imageBytes3);
+        List<int> imageBytes2 = _image2.readAsBytesSync();
+        String baseimage2 = base64Encode(imageBytes2);
+        List<int> imageBytes1 = _image1.readAsBytesSync();
+        String baseimage1 = base64Encode(imageBytes1);
 
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-TextEditingController _fnameController =  TextEditingController();
-FocusNode _fnameFocusNode =  FocusNode();
-String _fname;
-class SingleImageUpload extends StatefulWidget {
-  @override
-  _SingleImageUploadState createState() {
-    return _SingleImageUploadState();
-  }
-}
+        var url="api-url";
 
-class _SingleImageUploadState extends State<SingleImageUpload> {
-  List<Object> images = List<Object>();
-  Future<File> _imageFile;
+        var response=await http.post(url,headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+            body:jsonEncode({"pname": productNameController.text,
+          "pdesc":productDescController.text,"qun":quatityController.text,"cond":radioButtonItem,"stck":stckController.text,
+          "ptype":radioButtonItems,"payment":radioButtonItemss, "location":locaController.text,"price":mnyController.text,
+          "image1": baseimage1,
+          "image2":baseimage2,
+          "image3":baseimage3,
+          "image4":baseimage4,
+          "image5":baseimage5,
+          "image6":baseimage6,
+        })
+        );
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    setState(() {
-      images.add("Add Image");
-      images.add("Add Image");
-      images.add("Add Image");
-      images.add("Add Image");
-      images.add("Add Image");
-      images.add("Add Image");
-    });
-  }
+        var resq=jsonDecode(response.body);
 
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home:  Scaffold(
-        resizeToAvoidBottomPadding: false,
-      resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-
-          title:Text("POST"),
-          titleSpacing: 00.0,
-          centerTitle: true,
-          toolbarHeight: 60.2,
-          elevation: 6.00,
-          backgroundColor: Color.fromRGBO(14, 120, 18, 0.75),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _fnameController,
-             decoration: InputDecoration(
-               hintText: "",
-               labelText: "Write Something...",
-             ),
-              maxLines: 6,
-              maxLength: 256,
-              keyboardType: TextInputType.multiline,
-
-            ),
-
-            Expanded(
-              child: buildGridView(),
-            ),
-            ElevatedButton(
-              onPressed: () {
-               print(_fnameController.text);
-                Scaffold
-                    .of(context)
-                    .showSnackBar(SnackBar(content: Text('Processing Data')));
-
-              },
-              child: Text('Submit'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildGridView() {
-    return   GridView.count(
-      shrinkWrap: true,
-      crossAxisCount: 3,
-      childAspectRatio: 1,
-      children: List.generate(images.length, (index) {
-        if (images[index] is ImageUploadModel) {
-          ImageUploadModel uploadModel = images[index];
-          return Card(
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: <Widget>[
-                Image.file(
-                  uploadModel.imageFile,
-                  width: 300,
-                  height: 300,
-                ),
-                Positioned(
-                  right: 5,
-                  top: 5,
-                  child: InkWell(
-                    child: Icon(
-                      Icons.remove_circle,
-                      size: 20,
-                      color: Colors.red,
-                    ),
-                    onTap: () {
-                      setState(() {
-                        images.replaceRange(index, index + 1, ['Add Image']);
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          return Card(
-            child: IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                _onAddImageClick(index);
-              },
-            ),
+        if(resq == "success")
+        {
+          Fluttertoast.showToast(
+            msg: "SuccessFully",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            backgroundColor: Colors.green,
+            // also possible "TOP" and "CENTER"
           );
         }
-      }),
 
-    );
+        if(resq == "fail")
+        {
+          Fluttertoast.showToast(
+            msg: " Failed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            backgroundColor: Colors.red,
+            // also possible "TOP" and "CENTER"
+          );
+        }
+
+      }
+      else{
+        Fluttertoast.showToast(msg: 'One image must be provided');
+      }
+    }
   }
-
-  Future _onAddImageClick(int index) async {
-    setState(() {
-      _imageFile = ImagePicker.pickImage(source: ImageSource.gallery);
-      getFileImage(index);
-    });
-  }
-
-  void getFileImage(int index) async {
-//    var dir = await path_provider.getTemporaryDirectory();
-
-    _imageFile.then((file) async {
-      setState(() {
-        ImageUploadModel imageUpload = new ImageUploadModel();
-        imageUpload.isUploaded = false;
-        imageUpload.uploading = false;
-        imageUpload.imageFile = file;
-        imageUpload.imageUrl = '';
-        images.replaceRange(index, index + 1, [imageUpload]);
-      });
-    });
-  }
-}
-
-class ImageUploadModel {
-bool isUploaded;
-bool uploading;
-File imageFile;
-String imageUrl;
-
-ImageUploadModel({
-this.isUploaded,
-this.uploading,
-this.imageFile,
-this.imageUrl,
-});
-}
